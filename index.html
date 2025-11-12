@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FutdeSegunda - Ranking</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f0f0;
+    margin: 0;
+    padding: 20px;
+  }
+  h1 { text-align: center; color: #333; }
+  .container {
+    max-width: 700px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  input, button {
+    padding: 8px; margin: 5px;
+  }
+  table {
+    width: 100%; border-collapse: collapse; margin-top: 15px;
+  }
+  th, td {
+    border: 1px solid #ccc; padding: 8px; text-align: center;
+  }
+  th {
+    background: #eee;
+  }
+  button {
+    background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px;
+  }
+  button:hover {
+    background: #0056b3;
+  }
+</style>
+</head>
+<body>
+
+<h1>🏆 FutdeSegunda - Ranking</h1>
+
+<div class="container">
+  <div>
+    <input type="text" id="nome" placeholder="Nome do jogador">
+    <input type="number" id="gols" placeholder="Gols" min="0">
+    <input type="number" id="assist" placeholder="Assistências" min="0">
+    <button onclick="adicionarJogador()">Adicionar / Atualizar</button>
+    <button onclick="limparTudo()">🗑 Limpar Tudo</button>
+  </div>
+
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Posição</th>
+        <th>Jogador</th>
+        <th>Gols</th>
+        <th>Assistências</th>
+        <th>Pontos</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+let jogadores = JSON.parse(localStorage.getItem("jogadores")) || [];
+
+function salvar() {
+  localStorage.setItem("jogadores", JSON.stringify(jogadores));
+}
+
+function atualizarTabela() {
+  const tbody = document.querySelector("#tabela tbody");
+  tbody.innerHTML = "";
+
+  // Ordenar por pontos (2 pts por gol + 1 por assistência)
+  jogadores.sort((a, b) => (b.gols*2 + b.assist) - (a.gols*2 + a.assist));
+
+  jogadores.forEach((j, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${i+1}</td>
+      <td>${j.nome}</td>
+      <td>${j.gols}</td>
+      <td>${j.assist}</td>
+      <td>${j.gols*2 + j.assist}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function adicionarJogador() {
+  const nome = document.getElementById("nome").value.trim();
+  const gols = parseInt(document.getElementById("gols").value) || 0;
+  const assist = parseInt(document.getElementById("assist").value) || 0;
+
+  if (!nome) return alert("Digite o nome do jogador!");
+
+  const existente = jogadores.find(j => j.nome.toLowerCase() === nome.toLowerCase());
+  if (existente) {
+    existente.gols += gols;
+    existente.assist += assist;
+  } else {
+    jogadores.push({ nome, gols, assist });
+  }
+
+  salvar();
+  atualizarTabela();
+  document.getElementById("nome").value = "";
+  document.getElementById("gols").value = "";
+  document.getElementById("assist").value = "";
+}
+
+function limparTudo() {
+  if (confirm("Tem certeza que deseja apagar todos os dados?")) {
+    jogadores = [];
+    salvar();
+    atualizarTabela();
+  }
+}
+
+atualizarTabela();
+</script>
+</body>
+</html>
