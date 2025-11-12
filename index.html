@@ -1,114 +1,306 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>FutdeSegunda - Ranking</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f0f0f0;
-    margin: 0;
-    padding: 20px;
-  }
-  h1 { text-align: center; color: #333; }
-  .container {
-    max-width: 700px; margin: auto; background: white; padding: 20px;
-    border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
-  input, button {
-    padding: 8px; margin: 5px;
-  }
-  table {
-    width: 100%; border-collapse: collapse; margin-top: 15px;
-  }
-  th, td {
-    border: 1px solid #ccc; padding: 8px; text-align: center;
-  }
-  th {
-    background: #eee;
-  }
-  button {
-    background: #007bff; color: white; border: none; cursor: pointer; border-radius: 5px;
-  }
-  button:hover {
-    background: #0056b3;
-  }
-  #loginBox {
-    max-width: 400px; margin: 100px auto; text-align: center;
-    background: white; padding: 30px; border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  }
+  :root{ --accent:#007bff; --danger:#dc3545; --muted:#6b7280 }
+  body{font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;margin:0;padding:20px}
+  .wrap{max-width:900px;margin:20px auto;background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 20px rgba(10,20,40,0.06)}
+  h1{margin:0 0 8px;font-size:22px}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  input[type=text], input[type=number]{padding:8px;border:1px solid #e2e8f0;border-radius:6px}
+  button{padding:8px 10px;border-radius:6px;border:none;cursor:pointer;background:var(--accent);color:white}
+  button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+  button.danger{background:var(--danger)}
+  button.small{padding:6px 8px;font-size:13px}
+  .table-wrap{overflow:auto;margin-top:12px;border-radius:8px;border:1px solid #eef2f7}
+  table{width:100%;border-collapse:collapse}
+  th, td{padding:10px;border-top:1px solid #f3f4f6;text-align:center}
+  thead th{background:#fafafa;font-weight:700}
+  .stat-controls{display:flex;gap:6px;align-items:center;justify-content:center}
+  .stat-controls button{padding:6px 8px;background:white;color:#111;border:1px solid #ddd;border-radius:6px}
+  .footer{margin-top:10px;color:var(--muted);font-size:13px;text-align:center}
+  .admin-indicator{font-size:13px;color:green;margin-left:8px}
+  /* modal */
+  .modal-back{position:fixed;inset:0;background:rgba(2,6,23,0.35);display:flex;align-items:center;justify-content:center;z-index:40}
+  .modal{background:#fff;padding:18px;border-radius:10px;min-width:300px;box-shadow:0 8px 30px rgba(2,6,23,0.2)}
+  .modal input{width:100%;margin-bottom:8px}
+  .disabled{opacity:0.5;pointer-events:none}
+  @media (max-width:640px){ .controls{flex-direction:column;align-items:stretch} }
 </style>
 </head>
 <body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>🏆 FutdeSegunda — Ranking</h1>
+      <div style="color:var(--muted);font-size:13px">Visualização pública — faça login para editar</div>
+    </div>
 
-<h1>🏆 FutdeSegunda - Ranking</h1>
-
-<div id="loginBox">
-  <h3>Login de Administrador</h3>
-  <input type="text" id="usuario" placeholder="Usuário"><br>
-  <input type="password" id="senha" placeholder="Senha"><br>
-  <button onclick="fazerLogin()">Entrar</button>
-  <p id="msg" style="color:red;"></p>
-</div>
-
-<div class="container" id="app" style="display:none;">
-  <div id="controles">
-    <input type="text" id="nome" placeholder="Nome do jogador">
-    <input type="number" id="gols" placeholder="Gols" min="0">
-    <input type="number" id="assist" placeholder="Assistências" min="0">
-    <button onclick="adicionarJogador()">Adicionar / Atualizar</button>
-    <button onclick="limparTudo()">🗑 Limpar Tudo</button>
-    <button onclick="logout()" style="background:#dc3545;">Sair</button>
+    <div>
+      <button id="btnAdmin" class="ghost small">Entrar como Admin</button>
+      <span id="adminBadge" style="display:none" class="admin-indicator">🔒 Admin</span>
+      <button id="btnLogout" class="small" style="display:none;margin-left:8px">Sair</button>
+    </div>
   </div>
 
-  <table id="tabela">
-    <thead>
-      <tr>
-        <th>Posição</th>
-        <th>Jogador</th>
-        <th>Gols</th>
-        <th>Assistências</th>
-        <th>Pontos</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="controls" style="margin-bottom:10px">
+    <input id="nome" type="text" placeholder="Nome do jogador">
+    <input id="gols" type="number" min="0" placeholder="Gols" style="width:90px">
+    <input id="assist" type="number" min="0" placeholder="Assistências" style="width:110px">
+    <button id="btnAdd">Adicionar / Atualizar</button>
+    <button id="btnClear" class="danger">Limpar Tudo</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="tabela" aria-live="polite">
+      <thead>
+        <tr>
+          <th>Posição</th>
+          <th>Jogador</th>
+          <th>Gols</th>
+          <th>Assistências</th>
+          <th>Pontos</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="footer">Dados salvos localmente no navegador. Somente pessoas com a senha podem editar.</div>
+</div>
+
+<!-- Modal de login -->
+<div id="modal" style="display:none" class="modal-back">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3>Login de Administrador</h3>
+    <input id="modalUser" type="text" placeholder="Usuário">
+    <input id="modalPass" type="password" placeholder="Senha">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button id="modalCancel" class="ghost small">Cancelar</button>
+      <button id="modalEnter" class="small">Entrar</button>
+    </div>
+    <p id="modalMsg" style="color:red;font-size:13px;margin-top:8px"></p>
+  </div>
 </div>
 
 <script>
-let jogadores = JSON.parse(localStorage.getItem("jogadores")) || [];
-let logado = localStorage.getItem("logado") === "true";
+/* armazenamento e utilitários */
+const KEY = 'futde_jogadores_v1'
+let jogadores = JSON.parse(localStorage.getItem(KEY) || '[]')
+let isAdmin = localStorage.getItem('futde_is_admin') === 'true'
 
-function salvar() {
-  localStorage.setItem("jogadores", JSON.stringify(jogadores));
+/* elementos */
+const tbody = document.querySelector('#tabela tbody')
+const nomeIn = document.getElementById('nome')
+const golsIn = document.getElementById('gols')
+const assistIn = document.getElementById('assist')
+const btnAdd = document.getElementById('btnAdd')
+const btnClear = document.getElementById('btnClear')
+const btnAdmin = document.getElementById('btnAdmin')
+const btnLogout = document.getElementById('btnLogout')
+const adminBadge = document.getElementById('adminBadge')
+
+const modal = document.getElementById('modal')
+const modalUser = document.getElementById('modalUser')
+const modalPass = document.getElementById('modalPass')
+const modalEnter = document.getElementById('modalEnter')
+const modalCancel = document.getElementById('modalCancel')
+const modalMsg = document.getElementById('modalMsg')
+
+/* credenciais (conforme solicitado) */
+const ADMIN_USER = 'admin'
+const ADMIN_PASS = 'futsegunda'
+
+/* salvar e renderizar */
+function salvar(){
+  localStorage.setItem(KEY, JSON.stringify(jogadores))
 }
 
-function atualizarTabela() {
-  const tbody = document.querySelector("#tabela tbody");
-  tbody.innerHTML = "";
+function calcularPontos(p){
+  // regra: 2 pontos por gol + 1 por assistência (ajuste aqui se desejar)
+  return (Number(p.gols)||0) * 2 + (Number(p.assist)||0)
+}
 
-  jogadores.sort((a, b) => (b.gols*2 + b.assist) - (a.gols*2 + a.assist));
+function atualizarTabela(){
+  tbody.innerHTML = ''
+  // ordenar por pontos desc, depois por nome
+  jogadores.sort((a,b) => {
+    const pa = calcularPontos(a), pb = calcularPontos(b)
+    if(pb !== pa) return pb - pa
+    return (a.nome||'').localeCompare(b.nome||'')
+  })
 
-  jogadores.forEach((j, i) => {
-    const tr = document.createElement("tr");
+  jogadores.forEach((p, idx)=>{
+    const tr = document.createElement('tr')
     tr.innerHTML = `
-      <td>${i+1}</td>
-      <td>${j.nome}</td>
-      <td>${j.gols}</td>
-      <td>${j.assist}</td>
-      <td>${j.gols*2 + j.assist}</td>
-    `;
-    tbody.appendChild(tr);
-  });
+      <td>${idx+1}</td>
+      <td style="text-align:left;padding-left:10px">${escapeHtml(p.nome)}</td>
+      <td>${p.gols||0}</td>
+      <td>${p.assist||0}</td>
+      <td>${calcularPontos(p)}</td>
+      <td>
+        <div style="display:flex;gap:6px;justify-content:center">
+          <button class="btn-edit small" data-id="${p.id}">Editar</button>
+          <button class="btn-remove small" data-id="${p.id}">Remover</button>
+        </div>
+      </td>`
+    tbody.appendChild(tr)
+  })
+
+  // habilitar/desabilitar ações de acordo com admin
+  applyAdminState()
 }
 
-function adicionarJogador() {
-  const nome = document.getElementById("nome").value.trim();
-  const gols = parseInt(document.getElementById("gols").value) || 0;
-  const assist = parseInt(document.getElementById("assist").value) || 0;
+/* segurança simples ao inserir texto no DOM */
+function escapeHtml(str){
+  if(!str) return ''
+  return String(str).replace(/[&<>"']/g, function(m){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])
+  })
+}
 
-  if (!nome) return alert("Digite o nome do jogador!");
+/* adicionar/atualizar jogador */
+function adicionarJogador(){
+  const nome = (nomeIn.value || '').trim()
+  const gols = Number(golsIn.value) || 0
+  const assist = Number(assistIn.value) || 0
+  if(!nome) return alert('Digite o nome do jogador.')
 
-  const existente = jogadores.find(j => j.nome.toLowerCase() === nome.toLowerCase())
+  const existing = jogadores.find(p => p.nome.toLowerCase() === nome.toLowerCase())
+  if(existing){
+    // atualiza somando os valores
+    existing.gols = Number(existing.gols || 0) + gols
+    existing.assist = Number(existing.assist || 0) + assist
+  } else {
+    jogadores.push({ id: Date.now().toString(36), nome, gols, assist })
+  }
+  salvar()
+  atualizarTabela()
+  nomeIn.value = ''; golsIn.value = ''; assistIn.value = ''
+}
+
+/* editar: carrega o jogador no formulário para alterar manualmente */
+function editarJogador(id){
+  const p = jogadores.find(x=>x.id===id)
+  if(!p) return
+  nomeIn.value = p.nome
+  golsIn.value = p.gols
+  assistIn.value = p.assist
+}
+
+/* remover jogador */
+function removerJogador(id){
+  if(!confirm('Remover esse jogador?')) return
+  jogadores = jogadores.filter(p=>p.id !== id)
+  salvar()
+  atualizarTabela()
+}
+
+/* limpar tudo */
+function limparTudo(){
+  if(!confirm('Limpar todos os jogadores e estatísticas?')) return
+  jogadores = []
+  salvar()
+  atualizarTabela()
+}
+
+/* aplicar estado admin: habilita botões se admin, caso contrário desabilita */
+function applyAdminState(){
+  const disable = !isAdmin
+  // controles principais
+  if(disable){
+    btnAdd.classList.add('disabled'); btnClear.classList.add('disabled')
+    nomeIn.setAttribute('disabled',''); golsIn.setAttribute('disabled',''); assistIn.setAttribute('disabled','')
+  } else {
+    btnAdd.classList.remove('disabled'); btnClear.classList.remove('disabled')
+    nomeIn.removeAttribute('disabled'); golsIn.removeAttribute('disabled'); assistIn.removeAttribute('disabled')
+  }
+
+  // ações por linha
+  document.querySelectorAll('.btn-edit').forEach(b=>{
+    if(disable) b.classList.add('disabled'); else b.classList.remove('disabled')
+  })
+  document.querySelectorAll('.btn-remove').forEach(b=>{
+    if(disable) b.classList.add('disabled'); else b.classList.remove('disabled')
+  })
+
+  // admin UI
+  if(isAdmin){
+    adminBadge.style.display = 'inline-block'
+    btnLogout.style.display = 'inline-block'
+    btnAdmin.style.display = 'none'
+  } else {
+    adminBadge.style.display = 'none'
+    btnLogout.style.display = 'none'
+    btnAdmin.style.display = 'inline-block'
+  }
+}
+
+/* handlers globais */
+btnAdd.addEventListener('click', ()=> {
+  if(!isAdmin){ return promptAdmin() } // pede senha se não for admin
+  adicionarJogador()
+})
+
+btnClear.addEventListener('click', ()=> {
+  if(!isAdmin){ return promptAdmin() }
+  limparTudo()
+})
+
+btnAdmin.addEventListener('click', ()=> promptAdmin())
+btnLogout.addEventListener('click', ()=> {
+  isAdmin = false
+  localStorage.setItem('futde_is_admin','false')
+  applyAdminState()
+})
+
+/* eventos delegados para editar/remover nas linhas */
+tbody.addEventListener('click', (ev)=>{
+  const t = ev.target
+  if(t.matches('.btn-edit')){
+    const id = t.dataset.id
+    if(!isAdmin){ return promptAdmin() }
+    editarJogador(id)
+  } else if(t.matches('.btn-remove')){
+    const id = t.dataset.id
+    if(!isAdmin){ return promptAdmin() }
+    removerJogador(id)
+  }
+})
+
+/* modal de login */
+function promptAdmin(){
+  modal.style.display = 'flex'
+  modalUser.value = ''; modalPass.value = ''; modalMsg.textContent = ''
+  modalUser.focus()
+}
+modalCancel.addEventListener('click', ()=> modal.style.display = 'none')
+modalEnter.addEventListener('click', ()=>{
+  const u = modalUser.value.trim(), p = modalPass.value.trim()
+  if(u === ADMIN_USER && p === ADMIN_PASS){
+    isAdmin = true
+    localStorage.setItem('futde_is_admin','true')
+    modal.style.display = 'none'
+    applyAdminState()
+    alert('Login de administrador bem-sucedido.')
+  } else {
+    modalMsg.textContent = 'Usuário ou senha incorretos.'
+  }
+})
+
+/* enter no modal permite entrar */
+modalPass.addEventListener('keydown', (e)=> { if(e.key === 'Enter') modalEnter.click() })
+modalUser.addEventListener('keydown', (e)=> { if(e.key === 'Enter') modalPass.focus() })
+
+/* inicialização */
+atualizarTabela()
+applyAdminState()
+
+</script>
+</body>
+</html>
