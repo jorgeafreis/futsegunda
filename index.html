@@ -5,25 +5,51 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>FutdeSegunda - Ranking</title>
 <style>
-  :root{ --accent:#007bff; --danger:#dc3545; --muted:#6b7280 }
-  body{font-family:Arial,Helvetica,sans-serif;background:#f4f6f8;margin:0;padding:20px}
-  .wrap{max-width:900px;margin:20px auto;background:#fff;border-radius:10px;padding:18px;box-shadow:0 6px 20px rgba(10,20,40,0.06)}
-  h1{margin:0 0 8px;font-size:22px}
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  :root{
+    --accent:#007bff;
+    --danger:#dc3545;
+    --muted:#6b7280;
+  }
+
+  body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://cdn.pixabay.com/photo/2017/08/30/09/43/soccer-2694796_1280.jpg');
+    background-size:cover;
+    background-position:center;
+    margin:0;
+    padding:20px;
+    color:#222;
+  }
+
+  .wrap{
+    max-width:900px;
+    margin:20px auto;
+    background:rgba(255,255,255,0.95);
+    border-radius:12px;
+    padding:18px;
+    box-shadow:0 6px 20px rgba(10,20,40,0.3);
+  }
+
+  h1{margin:0 0 8px;font-size:24px;text-align:center;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
   input[type=text], input[type=number]{padding:8px;border:1px solid #e2e8f0;border-radius:6px}
   button{padding:8px 10px;border-radius:6px;border:none;cursor:pointer;background:var(--accent);color:white}
   button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
   button.danger{background:var(--danger)}
   button.small{padding:6px 8px;font-size:13px}
-  .table-wrap{overflow:auto;margin-top:12px;border-radius:8px;border:1px solid #eef2f7}
+  .table-wrap{overflow:auto;margin-top:12px;border-radius:8px;border:1px solid #eef2f7;background:white}
   table{width:100%;border-collapse:collapse}
   th, td{padding:10px;border-top:1px solid #f3f4f6;text-align:center}
   thead th{background:#fafafa;font-weight:700}
-  .stat-controls{display:flex;gap:6px;align-items:center;justify-content:center}
-  .stat-controls button{padding:6px 8px;background:white;color:#111;border:1px solid #ddd;border-radius:6px}
   .footer{margin-top:10px;color:var(--muted);font-size:13px;text-align:center}
   .admin-indicator{font-size:13px;color:green;margin-left:8px}
+
+  /* cores especiais do top 3 */
+  .primeiro{background:linear-gradient(90deg, #b6fcb6, #eaffea);box-shadow:0 0 10px rgba(0,255,0,0.5);}
+  .segundo{background:linear-gradient(90deg, #fff7b6, #fffde0);box-shadow:0 0 10px rgba(255,255,0,0.4);}
+  .terceiro{background:linear-gradient(90deg, #e5e5e5, #f5f5f5);box-shadow:0 0 10px rgba(150,150,150,0.4);}
+
   /* modal */
   .modal-back{position:fixed;inset:0;background:rgba(2,6,23,0.35);display:flex;align-items:center;justify-content:center;z-index:40}
   .modal{background:#fff;padding:18px;border-radius:10px;min-width:300px;box-shadow:0 8px 30px rgba(2,6,23,0.2)}
@@ -37,9 +63,8 @@
   <div class="topbar">
     <div>
       <h1>🏆 FutdeSegunda — Ranking</h1>
-      <div style="color:var(--muted);font-size:13px">Visualização pública — faça login para editar</div>
+      <div style="color:var(--muted);font-size:13px;text-align:center">Ranking atualizado em tempo real</div>
     </div>
-
     <div>
       <button id="btnAdmin" class="ghost small">Entrar como Admin</button>
       <span id="adminBadge" style="display:none" class="admin-indicator">🔒 Admin</span>
@@ -71,7 +96,7 @@
     </table>
   </div>
 
-  <div class="footer">Dados salvos localmente no navegador. Somente pessoas com a senha podem editar.</div>
+  <div class="footer">⚽ Dados salvos localmente. Apenas administradores podem alterar.</div>
 </div>
 
 <!-- Modal de login -->
@@ -89,218 +114,142 @@
 </div>
 
 <script>
-/* armazenamento e utilitários */
-const KEY = 'futde_jogadores_v1'
-let jogadores = JSON.parse(localStorage.getItem(KEY) || '[]')
-let isAdmin = localStorage.getItem('futde_is_admin') === 'true'
+const KEY = 'futde_jogadores_v2';
+let jogadores = JSON.parse(localStorage.getItem(KEY) || '[]');
+let isAdmin = localStorage.getItem('futde_is_admin') === 'true';
 
-/* elementos */
-const tbody = document.querySelector('#tabela tbody')
-const nomeIn = document.getElementById('nome')
-const golsIn = document.getElementById('gols')
-const assistIn = document.getElementById('assist')
-const btnAdd = document.getElementById('btnAdd')
-const btnClear = document.getElementById('btnClear')
-const btnAdmin = document.getElementById('btnAdmin')
-const btnLogout = document.getElementById('btnLogout')
-const adminBadge = document.getElementById('adminBadge')
+const tbody = document.querySelector('#tabela tbody');
+const nomeIn = document.getElementById('nome');
+const golsIn = document.getElementById('gols');
+const assistIn = document.getElementById('assist');
+const btnAdd = document.getElementById('btnAdd');
+const btnClear = document.getElementById('btnClear');
+const btnAdmin = document.getElementById('btnAdmin');
+const btnLogout = document.getElementById('btnLogout');
+const adminBadge = document.getElementById('adminBadge');
 
-const modal = document.getElementById('modal')
-const modalUser = document.getElementById('modalUser')
-const modalPass = document.getElementById('modalPass')
-const modalEnter = document.getElementById('modalEnter')
-const modalCancel = document.getElementById('modalCancel')
-const modalMsg = document.getElementById('modalMsg')
+const modal = document.getElementById('modal');
+const modalUser = document.getElementById('modalUser');
+const modalPass = document.getElementById('modalPass');
+const modalEnter = document.getElementById('modalEnter');
+const modalCancel = document.getElementById('modalCancel');
+const modalMsg = document.getElementById('modalMsg');
 
-/* credenciais (conforme solicitado) */
-const ADMIN_USER = 'admin'
-const ADMIN_PASS = 'futsegunda'
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'futsegunda';
 
-/* salvar e renderizar */
 function salvar(){
-  localStorage.setItem(KEY, JSON.stringify(jogadores))
+  localStorage.setItem(KEY, JSON.stringify(jogadores));
 }
 
-function calcularPontos(p){
-  // regra: 2 pontos por gol + 1 por assistência (ajuste aqui se desejar)
-  return (Number(p.gols)||0) * 2 + (Number(p.assist)||0)
-}
+function calcularPontos(p){ return (p.gols||0)*2 + (p.assist||0); }
 
 function atualizarTabela(){
-  tbody.innerHTML = ''
-  // ordenar por pontos desc, depois por nome
-  jogadores.sort((a,b) => {
-    const pa = calcularPontos(a), pb = calcularPontos(b)
-    if(pb !== pa) return pb - pa
-    return (a.nome||'').localeCompare(b.nome||'')
-  })
+  tbody.innerHTML = '';
+  jogadores.sort((a,b)=>{
+    const pa = calcularPontos(a), pb = calcularPontos(b);
+    return pb - pa;
+  });
 
-  jogadores.forEach((p, idx)=>{
-    const tr = document.createElement('tr')
+  jogadores.forEach((p,i)=>{
+    const tr = document.createElement('tr');
+    let classe = '';
+    if(i===0) classe='primeiro';
+    else if(i===1) classe='segundo';
+    else if(i===2) classe='terceiro';
+    tr.className = classe;
     tr.innerHTML = `
-      <td>${idx+1}</td>
-      <td style="text-align:left;padding-left:10px">${escapeHtml(p.nome)}</td>
-      <td>${p.gols||0}</td>
-      <td>${p.assist||0}</td>
+      <td><b>${i+1}º</b></td>
+      <td style="text-align:left">${escapeHtml(p.nome)}</td>
+      <td>${p.gols}</td>
+      <td>${p.assist}</td>
       <td>${calcularPontos(p)}</td>
       <td>
-        <div style="display:flex;gap:6px;justify-content:center">
-          <button class="btn-edit small" data-id="${p.id}">Editar</button>
-          <button class="btn-remove small" data-id="${p.id}">Remover</button>
-        </div>
-      </td>`
-    tbody.appendChild(tr)
-  })
-
-  // habilitar/desabilitar ações de acordo com admin
-  applyAdminState()
+        <button class="btn-edit small" data-id="${p.id}">Editar</button>
+        <button class="btn-remove small" data-id="${p.id}">Remover</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  applyAdminState();
 }
 
-/* segurança simples ao inserir texto no DOM */
 function escapeHtml(str){
-  if(!str) return ''
-  return String(str).replace(/[&<>"']/g, function(m){
-    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])
-  })
+  return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
 }
 
-/* adicionar/atualizar jogador */
 function adicionarJogador(){
-  const nome = (nomeIn.value || '').trim()
-  const gols = Number(golsIn.value) || 0
-  const assist = Number(assistIn.value) || 0
-  if(!nome) return alert('Digite o nome do jogador.')
-
-  const existing = jogadores.find(p => p.nome.toLowerCase() === nome.toLowerCase())
-  if(existing){
-    // atualiza somando os valores
-    existing.gols = Number(existing.gols || 0) + gols
-    existing.assist = Number(existing.assist || 0) + assist
-  } else {
-    jogadores.push({ id: Date.now().toString(36), nome, gols, assist })
-  }
-  salvar()
-  atualizarTabela()
-  nomeIn.value = ''; golsIn.value = ''; assistIn.value = ''
+  const nome = nomeIn.value.trim();
+  const gols = Number(golsIn.value)||0;
+  const assist = Number(assistIn.value)||0;
+  if(!nome) return alert('Digite o nome do jogador!');
+  const j = jogadores.find(x=>x.nome.toLowerCase()===nome.toLowerCase());
+  if(j){ j.gols+=gols; j.assist+=assist; }
+  else jogadores.push({id:Date.now().toString(36),nome,gols,assist});
+  salvar();
+  atualizarTabela();
+  nomeIn.value=golsIn.value=assistIn.value='';
 }
 
-/* editar: carrega o jogador no formulário para alterar manualmente */
 function editarJogador(id){
-  const p = jogadores.find(x=>x.id===id)
-  if(!p) return
-  nomeIn.value = p.nome
-  golsIn.value = p.gols
-  assistIn.value = p.assist
+  const p=jogadores.find(x=>x.id===id);
+  if(!p)return;
+  nomeIn.value=p.nome;golsIn.value=p.gols;assistIn.value=p.assist;
 }
 
-/* remover jogador */
 function removerJogador(id){
-  if(!confirm('Remover esse jogador?')) return
-  jogadores = jogadores.filter(p=>p.id !== id)
-  salvar()
-  atualizarTabela()
+  if(!confirm('Remover jogador?'))return;
+  jogadores=jogadores.filter(x=>x.id!==id);
+  salvar();atualizarTabela();
 }
 
-/* limpar tudo */
 function limparTudo(){
-  if(!confirm('Limpar todos os jogadores e estatísticas?')) return
-  jogadores = []
-  salvar()
-  atualizarTabela()
+  if(!confirm('Apagar todos os dados?'))return;
+  jogadores=[];salvar();atualizarTabela();
 }
 
-/* aplicar estado admin: habilita botões se admin, caso contrário desabilita */
 function applyAdminState(){
-  const disable = !isAdmin
-  // controles principais
-  if(disable){
-    btnAdd.classList.add('disabled'); btnClear.classList.add('disabled')
-    nomeIn.setAttribute('disabled',''); golsIn.setAttribute('disabled',''); assistIn.setAttribute('disabled','')
-  } else {
-    btnAdd.classList.remove('disabled'); btnClear.classList.remove('disabled')
-    nomeIn.removeAttribute('disabled'); golsIn.removeAttribute('disabled'); assistIn.removeAttribute('disabled')
-  }
-
-  // ações por linha
-  document.querySelectorAll('.btn-edit').forEach(b=>{
-    if(disable) b.classList.add('disabled'); else b.classList.remove('disabled')
-  })
-  document.querySelectorAll('.btn-remove').forEach(b=>{
-    if(disable) b.classList.add('disabled'); else b.classList.remove('disabled')
-  })
-
-  // admin UI
-  if(isAdmin){
-    adminBadge.style.display = 'inline-block'
-    btnLogout.style.display = 'inline-block'
-    btnAdmin.style.display = 'none'
-  } else {
-    adminBadge.style.display = 'none'
-    btnLogout.style.display = 'none'
-    btnAdmin.style.display = 'inline-block'
-  }
+  const disable=!isAdmin;
+  [btnAdd,btnClear].forEach(b=>b.classList.toggle('disabled',disable));
+  nomeIn.disabled=golsIn.disabled=assistIn.disabled=disable;
+  document.querySelectorAll('.btn-edit,.btn-remove').forEach(b=>b.classList.toggle('disabled',disable));
+  adminBadge.style.display=isAdmin?'inline-block':'none';
+  btnLogout.style.display=isAdmin?'inline-block':'none';
+  btnAdmin.style.display=isAdmin?'none':'inline-block';
 }
 
-/* handlers globais */
-btnAdd.addEventListener('click', ()=> {
-  if(!isAdmin){ return promptAdmin() } // pede senha se não for admin
-  adicionarJogador()
-})
+btnAdd.onclick=()=>{if(!isAdmin)return promptAdmin();adicionarJogador();}
+btnClear.onclick=()=>{if(!isAdmin)return promptAdmin();limparTudo();}
+btnAdmin.onclick=()=>promptAdmin();
+btnLogout.onclick=()=>{isAdmin=false;localStorage.setItem('futde_is_admin','false');applyAdminState();}
 
-btnClear.addEventListener('click', ()=> {
-  if(!isAdmin){ return promptAdmin() }
-  limparTudo()
-})
+tbody.onclick=(e)=>{
+  const t=e.target;
+  if(t.classList.contains('btn-edit')){if(!isAdmin)return promptAdmin();editarJogador(t.dataset.id);}
+  if(t.classList.contains('btn-remove')){if(!isAdmin)return promptAdmin();removerJogador(t.dataset.id);}
+}
 
-btnAdmin.addEventListener('click', ()=> promptAdmin())
-btnLogout.addEventListener('click', ()=> {
-  isAdmin = false
-  localStorage.setItem('futde_is_admin','false')
-  applyAdminState()
-})
-
-/* eventos delegados para editar/remover nas linhas */
-tbody.addEventListener('click', (ev)=>{
-  const t = ev.target
-  if(t.matches('.btn-edit')){
-    const id = t.dataset.id
-    if(!isAdmin){ return promptAdmin() }
-    editarJogador(id)
-  } else if(t.matches('.btn-remove')){
-    const id = t.dataset.id
-    if(!isAdmin){ return promptAdmin() }
-    removerJogador(id)
-  }
-})
-
-/* modal de login */
 function promptAdmin(){
-  modal.style.display = 'flex'
-  modalUser.value = ''; modalPass.value = ''; modalMsg.textContent = ''
-  modalUser.focus()
+  modal.style.display='flex';
+  modalUser.value='';modalPass.value='';modalMsg.textContent='';
+  modalUser.focus();
 }
-modalCancel.addEventListener('click', ()=> modal.style.display = 'none')
-modalEnter.addEventListener('click', ()=>{
-  const u = modalUser.value.trim(), p = modalPass.value.trim()
-  if(u === ADMIN_USER && p === ADMIN_PASS){
-    isAdmin = true
-    localStorage.setItem('futde_is_admin','true')
-    modal.style.display = 'none'
-    applyAdminState()
-    alert('Login de administrador bem-sucedido.')
-  } else {
-    modalMsg.textContent = 'Usuário ou senha incorretos.'
-  }
-})
 
-/* enter no modal permite entrar */
-modalPass.addEventListener('keydown', (e)=> { if(e.key === 'Enter') modalEnter.click() })
-modalUser.addEventListener('keydown', (e)=> { if(e.key === 'Enter') modalPass.focus() })
+modalCancel.onclick=()=>modal.style.display='none';
+modalEnter.onclick=()=>{
+  const u=modalUser.value.trim(),p=modalPass.value.trim();
+  if(u===ADMIN_USER&&p===ADMIN_PASS){
+    isAdmin=true;
+    localStorage.setItem('futde_is_admin','true');
+    modal.style.display='none';
+    applyAdminState();
+    alert('Login de administrador bem-sucedido.');
+  }else modalMsg.textContent='Usuário ou senha incorretos.';
+};
+modalPass.addEventListener('keydown',e=>{if(e.key==='Enter')modalEnter.click()});
+modalUser.addEventListener('keydown',e=>{if(e.key==='Enter')modalPass.focus()});
 
-/* inicialização */
-atualizarTabela()
-applyAdminState()
-
+atualizarTabela();
+applyAdminState();
 </script>
 </body>
 </html>
