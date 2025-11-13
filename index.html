@@ -5,22 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>FutdeSegunda - Ranking</title>
 <style>
-  :root{
-    --accent:#007bff;
-    --danger:#dc3545;
-    --muted:#6b7280;
-  }
-
   body{
     font-family:Arial,Helvetica,sans-serif;
-    background:linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://cdn.pixabay.com/photo/2017/08/30/09/43/soccer-2694796_1280.jpg');
+    background:linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)),
+      url('https://cdn.pixabay.com/photo/2016/11/29/04/00/soccer-1868973_1280.jpg');
     background-size:cover;
     background-position:center;
+    background-attachment:fixed;
     margin:0;
     padding:20px;
     color:#222;
   }
-
   .wrap{
     max-width:900px;
     margin:20px auto;
@@ -29,211 +24,217 @@
     padding:18px;
     box-shadow:0 6px 20px rgba(10,20,40,0.3);
   }
-
-  h1{margin:0 0 8px;font-size:24px;text-align:center;}
-  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-  .controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:center}
-  input[type=text], input[type=number]{padding:8px;border:1px solid #e2e8f0;border-radius:6px}
-  button{padding:8px 10px;border-radius:6px;border:none;cursor:pointer;background:var(--accent);color:white}
-  button.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
-  button.danger{background:var(--danger)}
-  button.small{padding:6px 8px;font-size:13px}
-  .table-wrap{overflow:auto;margin-top:12px;border-radius:8px;border:1px solid #eef2f7;background:white}
-  table{width:100%;border-collapse:collapse}
-  th, td{padding:10px;border-top:1px solid #f3f4f6;text-align:center}
-  thead th{background:#fafafa;font-weight:700}
-  .footer{margin-top:10px;color:var(--muted);font-size:13px;text-align:center}
-  .admin-indicator{font-size:13px;color:green;margin-left:8px}
-  .export-import{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
-
-  .primeiro{background:linear-gradient(90deg, #b6fcb6, #eaffea);box-shadow:0 0 10px rgba(0,255,0,0.5);}
-  .segundo{background:linear-gradient(90deg, #fff7b6, #fffde0);box-shadow:0 0 10px rgba(255,255,0,0.4);}
-  .terceiro{background:linear-gradient(90deg, #e5e5e5, #f5f5f5);box-shadow:0 0 10px rgba(150,150,150,0.4);}
-  .modal-back{position:fixed;inset:0;background:rgba(2,6,23,0.35);display:flex;align-items:center;justify-content:center;z-index:40}
-  .modal{background:#fff;padding:18px;border-radius:10px;min-width:300px;box-shadow:0 8px 30px rgba(2,6,23,0.2)}
-  .modal input{width:100%;margin-bottom:8px}
+  h1{
+    text-align:center;
+    margin:0 0 8px;
+    font-size:26px;
+    color:#006400;
+    text-shadow:1px 1px 2px #ccc;
+  }
+  .controls,.export-import{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-top:10px;
+  }
+  input,button{
+    padding:8px;
+    border-radius:6px;
+    border:1px solid #ddd;
+  }
+  button{
+    background:#007bff;
+    color:white;
+    cursor:pointer;
+    border:none;
+    transition:0.3s;
+  }
+  button:hover{background:#0056b3}
+  button.danger{background:#dc3545;}
+  button.ghost{
+    background:transparent;
+    color:#007bff;
+    border:1px solid #007bff;
+  }
   .disabled{opacity:0.5;pointer-events:none}
-  @media (max-width:640px){ .controls{flex-direction:column;align-items:stretch} }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px;
+  }
+  th,td{
+    padding:8px;
+    border:1px solid #eee;
+    text-align:center;
+  }
+  th{
+    background:#f7f7f7;
+  }
+  .primeiro{
+    background:linear-gradient(90deg, #b6fcb6, #eaffea);
+    box-shadow:0 0 10px rgba(0,255,0,0.5);
+  }
+  .segundo{
+    background:linear-gradient(90deg, #fff7b6, #fffde0);
+    box-shadow:0 0 10px rgba(255,255,0,0.4);
+  }
+  .terceiro{
+    background:linear-gradient(90deg, #e5e5e5, #f5f5f5);
+    box-shadow:0 0 10px rgba(150,150,150,0.4);
+  }
+  .footer{
+    text-align:center;
+    font-size:13px;
+    color:#666;
+    margin-top:10px;
+  }
+  #modal{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,0.4);
+  }
+  .box{
+    background:white;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.3);
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar">
-    <div>
-      <h1>🏆 FutdeSegunda — Ranking</h1>
-      <div style="color:var(--muted);font-size:13px;text-align:center">Ranking atualizado em tempo real</div>
-    </div>
-    <div>
-      <button id="btnAdmin" class="ghost small">Entrar como Admin</button>
-      <span id="adminBadge" style="display:none" class="admin-indicator">🔒 Admin</span>
-      <button id="btnLogout" class="small" style="display:none;margin-left:8px">Sair</button>
-    </div>
-  </div>
+  <h1>🏆 FutdeSegunda - Ranking</h1>
 
   <div class="controls">
     <input id="nome" type="text" placeholder="Nome do jogador">
-    <input id="gols" type="number" min="0" placeholder="Gols" style="width:90px">
-    <input id="assist" type="number" min="0" placeholder="Assistências" style="width:110px">
+    <input id="gols" type="number" min="0" placeholder="Gols">
+    <input id="assist" type="number" min="0" placeholder="Assistências">
     <button id="btnAdd">Adicionar / Atualizar</button>
     <button id="btnClear" class="danger">Limpar Tudo</button>
+    <button id="btnLogin" class="ghost">🔐 Login</button>
+    <button id="btnLogout" class="ghost" style="display:none">Sair</button>
   </div>
 
-  <div class="table-wrap">
-    <table id="tabela">
-      <thead>
-        <tr>
-          <th>Posição</th>
-          <th>Jogador</th>
-          <th>Gols</th>
-          <th>Assistências</th>
-          <th>Pontos</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <table id="tabela">
+    <thead>
+      <tr>
+        <th>Posição</th><th>Jogador</th><th>Gols</th><th>Assistências</th><th>Pontos</th><th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <div class="export-import">
     <button id="btnExport" class="ghost">📤 Exportar CSV</button>
-    <label class="ghost" style="padding:7px 12px;cursor:pointer;">
+    <label id="lblImport" class="ghost" style="padding:7px 12px;cursor:pointer;">
       📥 Importar CSV
       <input id="fileImport" type="file" accept=".csv" style="display:none">
     </label>
   </div>
 
-  <div class="footer">⚽ Dados salvos localmente. Somente administradores podem alterar.</div>
+  <div class="footer">⚽ Dados salvos localmente. Somente admin pode alterar.</div>
 </div>
 
-<!-- Modal de login -->
-<div id="modal" style="display:none" class="modal-back">
-  <div class="modal">
+<!-- Modal -->
+<div id="modal">
+  <div class="box">
     <h3>Login de Administrador</h3>
-    <input id="modalUser" type="text" placeholder="Usuário">
-    <input id="modalPass" type="password" placeholder="Senha">
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button id="modalCancel" class="ghost small">Cancelar</button>
-      <button id="modalEnter" class="small">Entrar</button>
-    </div>
-    <p id="modalMsg" style="color:red;font-size:13px;margin-top:8px"></p>
+    <input id="user" type="text" placeholder="Usuário"><br>
+    <input id="pass" type="password" placeholder="Senha"><br>
+    <button id="ok">Entrar</button>
+    <button id="cancel" class="ghost">Cancelar</button>
+    <p id="msg" style="color:red;"></p>
   </div>
 </div>
 
 <script>
-const KEY = 'futde_jogadores_v2';
-let jogadores = JSON.parse(localStorage.getItem(KEY) || '[]');
-let isAdmin = localStorage.getItem('futde_is_admin') === 'true';
+let jogadores = JSON.parse(localStorage.getItem("jogadores")||"[]");
+let admin = localStorage.getItem("isAdmin")==="true";
 
-const tbody = document.querySelector('#tabela tbody');
-const nomeIn = document.getElementById('nome');
-const golsIn = document.getElementById('gols');
-const assistIn = document.getElementById('assist');
-const btnAdd = document.getElementById('btnAdd');
-const btnClear = document.getElementById('btnClear');
-const btnAdmin = document.getElementById('btnAdmin');
-const btnLogout = document.getElementById('btnLogout');
-const adminBadge = document.getElementById('adminBadge');
-const btnExport = document.getElementById('btnExport');
-const fileImport = document.getElementById('fileImport');
+function salvar(){localStorage.setItem("jogadores",JSON.stringify(jogadores));}
+function pontos(j){return j.gols*2+j.assist;}
 
-const modal = document.getElementById('modal');
-const modalUser = document.getElementById('modalUser');
-const modalPass = document.getElementById('modalPass');
-const modalEnter = document.getElementById('modalEnter');
-const modalCancel = document.getElementById('modalCancel');
-const modalMsg = document.getElementById('modalMsg');
-
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'futsegunda';
-
-function salvar(){ localStorage.setItem(KEY, JSON.stringify(jogadores)); }
-function calcularPontos(p){ return (p.gols||0)*2 + (p.assist||0); }
-
-function atualizarTabela(){
-  tbody.innerHTML = '';
-  jogadores.sort((a,b)=>calcularPontos(b)-calcularPontos(a));
-  jogadores.forEach((p,i)=>{
-    const tr = document.createElement('tr');
-    if(i===0)tr.className='primeiro';
-    else if(i===1)tr.className='segundo';
-    else if(i===2)tr.className='terceiro';
-    tr.innerHTML = `
-      <td><b>${i+1}º</b></td>
-      <td style="text-align:left">${escapeHtml(p.nome)}</td>
-      <td>${p.gols}</td>
-      <td>${p.assist}</td>
-      <td>${calcularPontos(p)}</td>
-      <td>
-        <button class="btn-edit small" data-id="${p.id}">Editar</button>
-        <button class="btn-remove small" data-id="${p.id}">Remover</button>
-      </td>`;
-    tbody.appendChild(tr);
+function atualizar(){
+  jogadores.sort((a,b)=>pontos(b)-pontos(a));
+  const tb=document.querySelector("#tabela tbody");
+  tb.innerHTML="";
+  jogadores.forEach((j,i)=>{
+    const tr=document.createElement("tr");
+    if(i===0)tr.className="primeiro";
+    else if(i===1)tr.className="segundo";
+    else if(i===2)tr.className="terceiro";
+    tr.innerHTML=`<td>${i+1}º</td><td>${j.nome}</td><td>${j.gols}</td><td>${j.assist}</td><td>${pontos(j)}</td>
+      <td><button onclick="editar('${j.nome}')" ${!admin?"disabled":""}>✏</button>
+      <button onclick="remover('${j.nome}')" ${!admin?"disabled":""}>❌</button></td>`;
+    tb.appendChild(tr);
   });
-  applyAdminState();
+}
+function adicionar(){
+  if(!admin)return alert("Somente admin pode alterar!");
+  const n=nome.value.trim(),g=+gols.value||0,a=+assist.value||0;
+  if(!n)return alert("Digite o nome!");
+  let j=jogadores.find(x=>x.nome.toLowerCase()===n.toLowerCase());
+  if(j){j.gols+=g;j.assist+=a;}else jogadores.push({nome:n,gols:g,assist:a});
+  salvar();atualizar();
+  nome.value=gols.value=assist.value="";
+}
+function editar(n){
+  const j=jogadores.find(x=>x.nome===n);
+  if(!j)return;
+  nome.value=j.nome;gols.value=j.gols;assist.value=j.assist;
+}
+function remover(n){
+  if(!admin)return alert("Somente admin pode excluir!");
+  if(confirm("Remover jogador?")){jogadores=jogadores.filter(x=>x.nome!==n);salvar();atualizar();}
+}
+function limpar(){
+  if(!admin)return alert("Somente admin pode limpar!");
+  if(confirm("Apagar tudo?")){jogadores=[];salvar();atualizar();}
 }
 
-function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));}
-
-function adicionarJogador(){
-  const nome=nomeIn.value.trim();const gols=Number(golsIn.value)||0;const assist=Number(assistIn.value)||0;
-  if(!nome)return alert('Digite o nome do jogador!');
-  const j=jogadores.find(x=>x.nome.toLowerCase()===nome.toLowerCase());
-  if(j){j.gols+=gols;j.assist+=assist;}else jogadores.push({id:Date.now().toString(36),nome,gols,assist});
-  salvar();atualizarTabela();nomeIn.value=golsIn.value=assistIn.value='';
-}
-
-function editarJogador(id){const p=jogadores.find(x=>x.id===id);if(!p)return;nomeIn.value=p.nome;golsIn.value=p.gols;assistIn.value=p.assist;}
-function removerJogador(id){if(!confirm('Remover jogador?'))return;jogadores=jogadores.filter(x=>x.id!==id);salvar();atualizarTabela();}
-function limparTudo(){if(!confirm('Apagar todos os dados?'))return;jogadores=[];salvar();atualizarTabela();}
-
-function applyAdminState(){
-  const disable=!isAdmin;
-  [btnAdd,btnClear,btnExport,fileImport].forEach(b=>b.classList.toggle('disabled',disable));
-  nomeIn.disabled=golsIn.disabled=assistIn.disabled=disable;
-  document.querySelectorAll('.btn-edit,.btn-remove').forEach(b=>b.classList.toggle('disabled',disable));
-  adminBadge.style.display=isAdmin?'inline-block':'none';
-  btnLogout.style.display=isAdmin?'inline-block':'none';
-  btnAdmin.style.display=isAdmin?'none':'inline-block';
-}
-
-btnAdd.onclick=()=>{if(!isAdmin)return promptAdmin();adicionarJogador();}
-btnClear.onclick=()=>{if(!isAdmin)return promptAdmin();limparTudo();}
-btnAdmin.onclick=()=>promptAdmin();
-btnLogout.onclick=()=>{isAdmin=false;localStorage.setItem('futde_is_admin','false');applyAdminState();}
-tbody.onclick=(e)=>{const t=e.target;if(t.classList.contains('btn-edit')){if(!isAdmin)return promptAdmin();editarJogador(t.dataset.id);}if(t.classList.contains('btn-remove')){if(!isAdmin)return promptAdmin();removerJogador(t.dataset.id);}}
-
-function promptAdmin(){modal.style.display='flex';modalUser.value='';modalPass.value='';modalMsg.textContent='';modalUser.focus();}
-modalCancel.onclick=()=>modal.style.display='none';
-modalEnter.onclick=()=>{const u=modalUser.value.trim(),p=modalPass.value.trim();if(u===ADMIN_USER&&p===ADMIN_PASS){isAdmin=true;localStorage.setItem('futde_is_admin','true');modal.style.display='none';applyAdminState();alert('Login de administrador bem-sucedido.');}else modalMsg.textContent='Usuário ou senha incorretos.';}
-modalPass.addEventListener('keydown',e=>{if(e.key==='Enter')modalEnter.click()});
-modalUser.addEventListener('keydown',e=>{if(e.key==='Enter')modalPass.focus()});
+btnAdd.onclick=adicionar;
+btnClear.onclick=limpar;
 
 btnExport.onclick=()=>{
-  if(!isAdmin)return promptAdmin();
-  const header='Nome;Gols;Assistências;Pontos\n';
-  const lines=jogadores.map(p=>`${p.nome};${p.gols};${p.assist};${calcularPontos(p)}`).join('\n');
-  const blob=new Blob([header+lines],{type:'text/csv;charset=utf-8;'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');a.href=url;a.download='ranking_futsegunda.csv';a.click();URL.revokeObjectURL(url);
+  const linhas=jogadores.map(j=>`${j.nome};${j.gols};${j.assist};${pontos(j)}`);
+  const csv="Nome;Gols;Assistências;Pontos\n"+linhas.join("\n");
+  const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="ranking.csv";a.click();URL.revokeObjectURL(a.href);
 };
 
+// Importação protegida
 fileImport.onchange=(e)=>{
-  if(!isAdmin)return promptAdmin();
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=(ev)=>{
-    const lines=ev.target.result.trim().split('\n').slice(1);
-    jogadores=lines.map(l=>{
-      const [nome,gols,assist]=l.split(';');
-      return {id:Date.now().toString(36)+Math.random().toString(36).slice(2),nome,gols:+gols||0,assist:+assist||0};
+  if(!admin){alert("Somente admin pode importar dados!");e.target.value="";return;}
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    const linhas=ev.target.result.trim().split("\n").slice(1);
+    jogadores=linhas.map(l=>{
+      const [n,g,a]=l.split(";");return {nome:n,gols:+g||0,assist:+a||0};
     });
-    salvar();atualizarTabela();alert('Importação concluída!');
+    salvar();atualizar();alert("Importação concluída!");
   };
-  reader.readAsText(file);
+  r.readAsText(f);
 };
 
-atualizarTabela();
-applyAdminState();
+btnLogin.onclick=()=>{modal.style.display="flex";};
+btnLogout.onclick=()=>{admin=false;localStorage.setItem("isAdmin","false");btnLogout.style.display="none";atualizar();}
+cancel.onclick=()=>modal.style.display="none";
+ok.onclick=()=>{
+  if(user.value==="admin"&&pass.value==="futsegunda"){
+    admin=true;localStorage.setItem("isAdmin","true");
+    modal.style.display="none";btnLogout.style.display="inline-block";
+    alert("Login realizado!");
+    atualizar();
+  }else msg.textContent="Usuário ou senha incorretos!";
+};
+atualizar();
+if(admin)btnLogout.style.display="inline-block";
 </script>
 </body>
 </html>
