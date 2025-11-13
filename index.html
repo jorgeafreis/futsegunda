@@ -2,9 +2,13 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>FutdeSegunda - Ranking</title>
 <style>
+  :root {
+    --verde: #006400;
+    --azul: #007bff;
+  }
   body {
     font-family: Arial, Helvetica, sans-serif;
     background: 
@@ -14,81 +18,93 @@
     background-position: center;
     background-attachment: fixed;
     margin: 0;
-    padding: 20px;
+    padding: 15px;
     color: #222;
     transition: background-image 0.5s ease;
   }
   .wrap {
     max-width: 900px;
-    margin: 20px auto;
+    margin: auto;
     background: rgba(255,255,255,0.95);
     border-radius: 12px;
-    padding: 18px;
-    box-shadow: 0 6px 20px rgba(10,20,40,0.3);
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(10,20,40,0.25);
   }
   h1 {
     text-align: center;
-    margin: 0 0 8px;
-    font-size: 26px;
-    color: #006400;
+    font-size: 24px;
+    color: var(--verde);
+    margin-bottom: 10px;
     text-shadow: 1px 1px 2px #ccc;
   }
+
+  /* === Responsividade === */
   .controls, .export-import {
     display: flex;
-    gap: 8px;
     flex-wrap: wrap;
+    gap: 8px;
     justify-content: center;
-    margin-top: 10px;
+    margin-bottom: 10px;
   }
   input, button {
-    padding: 8px;
+    padding: 10px;
     border-radius: 6px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
+    font-size: 15px;
+  }
+  input {
+    flex: 1;
+    min-width: 140px;
   }
   button {
-    background: #007bff;
-    color: white;
-    cursor: pointer;
+    background: var(--azul);
+    color: #fff;
     border: none;
+    cursor: pointer;
     transition: 0.3s;
   }
   button:hover { background: #0056b3; }
   button.danger { background: #dc3545; }
   button.ghost {
     background: transparent;
-    color: #007bff;
-    border: 1px solid #007bff;
+    color: var(--azul);
+    border: 1px solid var(--azul);
   }
   .disabled{opacity:0.5;pointer-events:none}
+
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
+    margin-top: 10px;
+    font-size: 14px;
   }
   th, td {
-    padding: 8px;
     border: 1px solid #eee;
+    padding: 6px;
     text-align: center;
   }
   th { background: #f7f7f7; }
+
   .primeiro {
     background: linear-gradient(90deg, #b6fcb6, #eaffea);
-    box-shadow: 0 0 10px rgba(0,255,0,0.5);
+    box-shadow: 0 0 8px rgba(0,255,0,0.4);
   }
   .segundo {
     background: linear-gradient(90deg, #fff7b6, #fffde0);
-    box-shadow: 0 0 10px rgba(255,255,0,0.4);
+    box-shadow: 0 0 8px rgba(255,255,0,0.3);
   }
   .terceiro {
     background: linear-gradient(90deg, #e5e5e5, #f5f5f5);
-    box-shadow: 0 0 10px rgba(150,150,150,0.4);
+    box-shadow: 0 0 8px rgba(150,150,150,0.3);
   }
   .footer {
     text-align: center;
     font-size: 13px;
     color: #666;
-    margin-top: 10px;
+    margin-top: 8px;
   }
+
+  /* === Modal === */
   #modal {
     position: fixed;
     inset: 0;
@@ -101,7 +117,17 @@
     background: white;
     padding: 20px;
     border-radius: 10px;
+    width: 90%;
+    max-width: 300px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  /* === Ajustes mobile === */
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    h1 { font-size: 20px; }
+    button, input { font-size: 14px; padding: 8px; }
+    th, td { font-size: 13px; }
   }
 </style>
 </head>
@@ -114,10 +140,10 @@
     <input id="gols" type="number" min="0" placeholder="Gols">
     <input id="assist" type="number" min="0" placeholder="Assistências">
     <button id="btnAdd">Adicionar / Atualizar</button>
-    <button id="btnClear" class="danger">Limpar Tudo</button>
+    <button id="btnClear" class="danger">Limpar</button>
     <button id="btnLogin" class="ghost">🔐 Login</button>
     <button id="btnLogout" class="ghost" style="display:none">Sair</button>
-    <button id="btnTema" class="ghost">🌆 Mudar tema do campo</button>
+    <button id="btnTema" class="ghost">🌆 Mudar tema</button>
   </div>
 
   <table id="tabela">
@@ -137,18 +163,18 @@
     </label>
   </div>
 
-  <div class="footer">⚽ Dados salvos localmente. Somente admin pode alterar.</div>
+  <div class="footer">⚽ Somente admin pode alterar os dados.</div>
 </div>
 
-<!-- Modal -->
+<!-- Modal de Login -->
 <div id="modal">
   <div class="box">
     <h3>Login de Administrador</h3>
-    <input id="user" type="text" placeholder="Usuário"><br>
-    <input id="pass" type="password" placeholder="Senha"><br>
-    <button id="ok">Entrar</button>
-    <button id="cancel" class="ghost">Cancelar</button>
-    <p id="msg" style="color:red;"></p>
+    <input id="user" type="text" placeholder="Usuário" style="width:100%;margin-bottom:5px;">
+    <input id="pass" type="password" placeholder="Senha" style="width:100%;margin-bottom:8px;">
+    <button id="ok" style="width:100%;margin-bottom:5px;">Entrar</button>
+    <button id="cancel" class="ghost" style="width:100%;">Cancelar</button>
+    <p id="msg" style="color:red;text-align:center;"></p>
   </div>
 </div>
 
@@ -158,14 +184,15 @@ let admin = localStorage.getItem("isAdmin")==="true";
 let temaAtual = 0;
 
 const fundos = [
-  "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1920&q=80", // gramado
-  "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1920&q=80", // estádio noturno
-  "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80"  // bola no gramado
+  "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1920&q=80",
+  "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1920&q=80",
+  "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80"
 ];
 
 function mudarTema(){
   temaAtual = (temaAtual + 1) % fundos.length;
-  document.body.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('${fundos[temaAtual]}')`;
+  document.body.style.backgroundImage = 
+    `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('${fundos[temaAtual]}')`;
 }
 document.getElementById("btnTema").onclick = mudarTema;
 
@@ -187,6 +214,7 @@ function atualizar(){
     tb.appendChild(tr);
   });
 }
+
 function adicionar(){
   if(!admin)return alert("Somente admin pode alterar!");
   const n=nome.value.trim(),g=+gols.value||0,a=+assist.value||0;
@@ -221,9 +249,9 @@ btnExport.onclick=()=>{
   a.download="ranking.csv";a.click();URL.revokeObjectURL(a.href);
 };
 
-// Importação protegida
+// Importação apenas para admin
 fileImport.onchange=(e)=>{
-  if(!admin){alert("Somente admin pode importar dados!");e.target.value="";return;}
+  if(!admin){alert("Somente admin pode importar!");e.target.value="";return;}
   const f=e.target.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=ev=>{
@@ -231,12 +259,12 @@ fileImport.onchange=(e)=>{
     jogadores=linhas.map(l=>{
       const [n,g,a]=l.split(";");return {nome:n,gols:+g||0,assist:+a||0};
     });
-    salvar();atualizar();alert("Importação concluída!");
+    salvar();atualizar();alert("Importado com sucesso!");
   };
   r.readAsText(f);
 };
 
-btnLogin.onclick=()=>{modal.style.display="flex";};
+btnLogin.onclick=()=>modal.style.display="flex";
 btnLogout.onclick=()=>{admin=false;localStorage.setItem("isAdmin","false");btnLogout.style.display="none";atualizar();}
 cancel.onclick=()=>modal.style.display="none";
 ok.onclick=()=>{
@@ -247,6 +275,7 @@ ok.onclick=()=>{
     atualizar();
   }else msg.textContent="Usuário ou senha incorretos!";
 };
+
 atualizar();
 if(admin)btnLogout.style.display="inline-block";
 </script>
