@@ -46,4 +46,194 @@
   .admin-indicator{font-size:13px;color:green;margin-left:8px}
   .export-import{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
 
-  .primeiro{background:linear-gradient(
+  .primeiro{background:linear-gradient(90deg, #b6fcb6, #eaffea);box-shadow:0 0 10px rgba(0,255,0,0.5);}
+  .segundo{background:linear-gradient(90deg, #fff7b6, #fffde0);box-shadow:0 0 10px rgba(255,255,0,0.4);}
+  .terceiro{background:linear-gradient(90deg, #e5e5e5, #f5f5f5);box-shadow:0 0 10px rgba(150,150,150,0.4);}
+  .modal-back{position:fixed;inset:0;background:rgba(2,6,23,0.35);display:flex;align-items:center;justify-content:center;z-index:40}
+  .modal{background:#fff;padding:18px;border-radius:10px;min-width:300px;box-shadow:0 8px 30px rgba(2,6,23,0.2)}
+  .modal input{width:100%;margin-bottom:8px}
+  .disabled{opacity:0.5;pointer-events:none}
+  @media (max-width:640px){ .controls{flex-direction:column;align-items:stretch} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>🏆 FutdeSegunda — Ranking</h1>
+      <div style="color:var(--muted);font-size:13px;text-align:center">Ranking atualizado em tempo real</div>
+    </div>
+    <div>
+      <button id="btnAdmin" class="ghost small">Entrar como Admin</button>
+      <span id="adminBadge" style="display:none" class="admin-indicator">🔒 Admin</span>
+      <button id="btnLogout" class="small" style="display:none;margin-left:8px">Sair</button>
+    </div>
+  </div>
+
+  <div class="controls">
+    <input id="nome" type="text" placeholder="Nome do jogador">
+    <input id="gols" type="number" min="0" placeholder="Gols" style="width:90px">
+    <input id="assist" type="number" min="0" placeholder="Assistências" style="width:110px">
+    <button id="btnAdd">Adicionar / Atualizar</button>
+    <button id="btnClear" class="danger">Limpar Tudo</button>
+  </div>
+
+  <div class="table-wrap">
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>Posição</th>
+          <th>Jogador</th>
+          <th>Gols</th>
+          <th>Assistências</th>
+          <th>Pontos</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div class="export-import">
+    <button id="btnExport" class="ghost">📤 Exportar CSV</button>
+    <label class="ghost" style="padding:7px 12px;cursor:pointer;">
+      📥 Importar CSV
+      <input id="fileImport" type="file" accept=".csv" style="display:none">
+    </label>
+  </div>
+
+  <div class="footer">⚽ Dados salvos localmente. Somente administradores podem alterar.</div>
+</div>
+
+<!-- Modal de login -->
+<div id="modal" style="display:none" class="modal-back">
+  <div class="modal">
+    <h3>Login de Administrador</h3>
+    <input id="modalUser" type="text" placeholder="Usuário">
+    <input id="modalPass" type="password" placeholder="Senha">
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button id="modalCancel" class="ghost small">Cancelar</button>
+      <button id="modalEnter" class="small">Entrar</button>
+    </div>
+    <p id="modalMsg" style="color:red;font-size:13px;margin-top:8px"></p>
+  </div>
+</div>
+
+<script>
+const KEY = 'futde_jogadores_v2';
+let jogadores = JSON.parse(localStorage.getItem(KEY) || '[]');
+let isAdmin = localStorage.getItem('futde_is_admin') === 'true';
+
+const tbody = document.querySelector('#tabela tbody');
+const nomeIn = document.getElementById('nome');
+const golsIn = document.getElementById('gols');
+const assistIn = document.getElementById('assist');
+const btnAdd = document.getElementById('btnAdd');
+const btnClear = document.getElementById('btnClear');
+const btnAdmin = document.getElementById('btnAdmin');
+const btnLogout = document.getElementById('btnLogout');
+const adminBadge = document.getElementById('adminBadge');
+const btnExport = document.getElementById('btnExport');
+const fileImport = document.getElementById('fileImport');
+
+const modal = document.getElementById('modal');
+const modalUser = document.getElementById('modalUser');
+const modalPass = document.getElementById('modalPass');
+const modalEnter = document.getElementById('modalEnter');
+const modalCancel = document.getElementById('modalCancel');
+const modalMsg = document.getElementById('modalMsg');
+
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'futsegunda';
+
+function salvar(){ localStorage.setItem(KEY, JSON.stringify(jogadores)); }
+function calcularPontos(p){ return (p.gols||0)*2 + (p.assist||0); }
+
+function atualizarTabela(){
+  tbody.innerHTML = '';
+  jogadores.sort((a,b)=>calcularPontos(b)-calcularPontos(a));
+  jogadores.forEach((p,i)=>{
+    const tr = document.createElement('tr');
+    if(i===0)tr.className='primeiro';
+    else if(i===1)tr.className='segundo';
+    else if(i===2)tr.className='terceiro';
+    tr.innerHTML = `
+      <td><b>${i+1}º</b></td>
+      <td style="text-align:left">${escapeHtml(p.nome)}</td>
+      <td>${p.gols}</td>
+      <td>${p.assist}</td>
+      <td>${calcularPontos(p)}</td>
+      <td>
+        <button class="btn-edit small" data-id="${p.id}">Editar</button>
+        <button class="btn-remove small" data-id="${p.id}">Remover</button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  applyAdminState();
+}
+
+function escapeHtml(str){return String(str||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));}
+
+function adicionarJogador(){
+  const nome=nomeIn.value.trim();const gols=Number(golsIn.value)||0;const assist=Number(assistIn.value)||0;
+  if(!nome)return alert('Digite o nome do jogador!');
+  const j=jogadores.find(x=>x.nome.toLowerCase()===nome.toLowerCase());
+  if(j){j.gols+=gols;j.assist+=assist;}else jogadores.push({id:Date.now().toString(36),nome,gols,assist});
+  salvar();atualizarTabela();nomeIn.value=golsIn.value=assistIn.value='';
+}
+
+function editarJogador(id){const p=jogadores.find(x=>x.id===id);if(!p)return;nomeIn.value=p.nome;golsIn.value=p.gols;assistIn.value=p.assist;}
+function removerJogador(id){if(!confirm('Remover jogador?'))return;jogadores=jogadores.filter(x=>x.id!==id);salvar();atualizarTabela();}
+function limparTudo(){if(!confirm('Apagar todos os dados?'))return;jogadores=[];salvar();atualizarTabela();}
+
+function applyAdminState(){
+  const disable=!isAdmin;
+  [btnAdd,btnClear,btnExport,fileImport].forEach(b=>b.classList.toggle('disabled',disable));
+  nomeIn.disabled=golsIn.disabled=assistIn.disabled=disable;
+  document.querySelectorAll('.btn-edit,.btn-remove').forEach(b=>b.classList.toggle('disabled',disable));
+  adminBadge.style.display=isAdmin?'inline-block':'none';
+  btnLogout.style.display=isAdmin?'inline-block':'none';
+  btnAdmin.style.display=isAdmin?'none':'inline-block';
+}
+
+btnAdd.onclick=()=>{if(!isAdmin)return promptAdmin();adicionarJogador();}
+btnClear.onclick=()=>{if(!isAdmin)return promptAdmin();limparTudo();}
+btnAdmin.onclick=()=>promptAdmin();
+btnLogout.onclick=()=>{isAdmin=false;localStorage.setItem('futde_is_admin','false');applyAdminState();}
+tbody.onclick=(e)=>{const t=e.target;if(t.classList.contains('btn-edit')){if(!isAdmin)return promptAdmin();editarJogador(t.dataset.id);}if(t.classList.contains('btn-remove')){if(!isAdmin)return promptAdmin();removerJogador(t.dataset.id);}}
+
+function promptAdmin(){modal.style.display='flex';modalUser.value='';modalPass.value='';modalMsg.textContent='';modalUser.focus();}
+modalCancel.onclick=()=>modal.style.display='none';
+modalEnter.onclick=()=>{const u=modalUser.value.trim(),p=modalPass.value.trim();if(u===ADMIN_USER&&p===ADMIN_PASS){isAdmin=true;localStorage.setItem('futde_is_admin','true');modal.style.display='none';applyAdminState();alert('Login de administrador bem-sucedido.');}else modalMsg.textContent='Usuário ou senha incorretos.';}
+modalPass.addEventListener('keydown',e=>{if(e.key==='Enter')modalEnter.click()});
+modalUser.addEventListener('keydown',e=>{if(e.key==='Enter')modalPass.focus()});
+
+btnExport.onclick=()=>{
+  if(!isAdmin)return promptAdmin();
+  const header='Nome;Gols;Assistências;Pontos\n';
+  const lines=jogadores.map(p=>`${p.nome};${p.gols};${p.assist};${calcularPontos(p)}`).join('\n');
+  const blob=new Blob([header+lines],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='ranking_futsegunda.csv';a.click();URL.revokeObjectURL(url);
+};
+
+fileImport.onchange=(e)=>{
+  if(!isAdmin)return promptAdmin();
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    const lines=ev.target.result.trim().split('\n').slice(1);
+    jogadores=lines.map(l=>{
+      const [nome,gols,assist]=l.split(';');
+      return {id:Date.now().toString(36)+Math.random().toString(36).slice(2),nome,gols:+gols||0,assist:+assist||0};
+    });
+    salvar();atualizarTabela();alert('Importação concluída!');
+  };
+  reader.readAsText(file);
+};
+
+atualizarTabela();
+applyAdminState();
+</script>
+</body>
+</html>
