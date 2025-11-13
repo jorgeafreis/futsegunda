@@ -1,181 +1,178 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>FutdeSegunda - Ranking</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FutdeSegunda ⚽</title>
+
 <style>
-  :root {
-    --verde: #006400;
-    --azul: #007bff;
-  }
   body {
     font-family: Arial, Helvetica, sans-serif;
     background: 
       linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)),
-      url('https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1920&q=80');
+      url('https://wallpapers.com/images/high/uefa-champions-league-star-bowl-rlsrfh81jsb88ed1.webp');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     margin: 0;
-    padding: 15px;
+    padding: 10px;
     color: #222;
-    transition: background-image 0.5s ease;
   }
+
   .wrap {
     max-width: 900px;
-    margin: auto;
-    background: rgba(255,255,255,0.95);
+    margin: 10px auto;
+    background: rgba(255,255,255,0.96);
     border-radius: 12px;
     padding: 15px;
-    box-shadow: 0 4px 15px rgba(10,20,40,0.25);
+    box-shadow: 0 6px 20px rgba(10,20,40,0.3);
   }
+
   h1 {
     text-align: center;
-    font-size: 24px;
-    color: var(--verde);
-    margin-bottom: 10px;
+    margin: 0 0 8px;
+    font-size: 26px;
+    color: #006400;
     text-shadow: 1px 1px 2px #ccc;
   }
 
   .controls, .export-import {
     display: flex;
-    flex-wrap: wrap;
     gap: 8px;
+    flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 10px;
+    margin-top: 10px;
   }
+
   input, button {
-    padding: 10px;
+    padding: 8px;
     border-radius: 6px;
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     font-size: 15px;
   }
-  input {
-    flex: 1;
-    min-width: 140px;
-  }
+
   button {
-    background: var(--azul);
-    color: #fff;
-    border: none;
+    background: #007bff;
+    color: white;
     cursor: pointer;
+    border: none;
     transition: 0.3s;
   }
+
   button:hover { background: #0056b3; }
   button.danger { background: #dc3545; }
   button.ghost {
     background: transparent;
-    color: var(--azul);
-    border: 1px solid var(--azul);
+    color: #007bff;
+    border: 1px solid #007bff;
   }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
-    font-size: 14px;
+    margin-top: 15px;
   }
+
   th, td {
+    padding: 8px;
     border: 1px solid #eee;
-    padding: 6px;
     text-align: center;
   }
+
   th { background: #f7f7f7; }
 
   .primeiro {
     background: linear-gradient(90deg, #b6fcb6, #eaffea);
-    box-shadow: 0 0 8px rgba(0,255,0,0.4);
+    box-shadow: 0 0 10px rgba(0,255,0,0.5);
   }
   .segundo {
     background: linear-gradient(90deg, #fff7b6, #fffde0);
-    box-shadow: 0 0 8px rgba(255,255,0,0.3);
+    box-shadow: 0 0 10px rgba(255,255,0,0.4);
   }
   .terceiro {
     background: linear-gradient(90deg, #e5e5e5, #f5f5f5);
-    box-shadow: 0 0 8px rgba(150,150,150,0.3);
+    box-shadow: 0 0 10px rgba(150,150,150,0.4);
   }
 
   .footer {
     text-align: center;
     font-size: 13px;
     color: #666;
-    margin-top: 8px;
-  }
-
-  /* === Modal === */
-  #modal {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0,0,0,0.4);
-  }
-  .box {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 300px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    margin-top: 10px;
   }
 
   @media (max-width: 600px) {
-    body { padding: 10px; }
-    h1 { font-size: 20px; }
-    button, input { font-size: 14px; padding: 8px; }
-    th, td { font-size: 13px; }
+    .controls, .export-import { flex-direction: column; align-items: stretch; }
+    button, input { width: 100%; }
+    h1 { font-size: 22px; }
+  }
+
+  /* Modal de login */
+  #modal {
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.6);
+    justify-content:center;
+    align-items:center;
+  }
+  #modal .box {
+    background:#fff;
+    padding:20px;
+    border-radius:10px;
+    width:300px;
+    text-align:center;
   }
 </style>
 </head>
+
 <body>
-<div class="wrap">
-  <h1>🏆 FutdeSegunda - Ranking</h1>
+  <div class="wrap">
+    <h1>🏆 FutdeSegunda</h1>
+    <div class="controls">
+      <input id="nome" placeholder="Nome do jogador" />
+      <input id="gols" type="number" placeholder="Gols" />
+      <input id="assist" type="number" placeholder="Assistências" />
+      <button id="btnAdd">➕ Adicionar / Atualizar</button>
+      <button id="btnClear" class="danger">🗑 Limpar Tudo</button>
+    </div>
 
-  <div class="controls">
-    <input id="nome" type="text" placeholder="Nome do jogador">
-    <input id="gols" type="number" min="0" placeholder="Gols">
-    <input id="assist" type="number" min="0" placeholder="Assistências">
-    <button id="btnAdd">Adicionar / Atualizar</button>
-    <button id="btnClear" class="danger">Limpar</button>
-    <button id="btnLogin" class="ghost">🔐 Login</button>
-    <button id="btnLogout" class="ghost" style="display:none">Sair</button>
-    <button id="btnTema" class="ghost">🌆 Mudar tema</button>
-    <button id="btnSom" class="ghost">🔊 Torcida</button>
+    <div class="export-import">
+      <button id="btnExport" class="ghost">⬇ Exportar CSV</button>
+      <input type="file" id="fileImport" accept=".csv" />
+    </div>
+
+    <table id="tabela">
+      <thead>
+        <tr>
+          <th>#</th><th>Jogador</th><th>Gols</th><th>Assistências</th><th>Pontos</th><th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="controls">
+      <button id="btnTema" class="ghost">🌄 Mudar Fundo</button>
+      <button id="btnSom" class="ghost">🎵 Champions</button>
+      <button id="btnLogin" class="ghost">🔐 Login</button>
+      <button id="btnLogout" class="danger" style="display:none;">🚪 Sair</button>
+    </div>
+
+    <div class="footer">FutdeSegunda © 2025 — Sistema de Ranking</div>
   </div>
 
-  <table id="tabela">
-    <thead>
-      <tr>
-        <th>Posição</th><th>Jogador</th><th>Gols</th><th>Assistências</th><th>Pontos</th><th>Ações</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <div class="export-import">
-    <button id="btnExport" class="ghost">📤 Exportar CSV</button>
-    <label id="lblImport" class="ghost" style="padding:7px 12px;cursor:pointer;">
-      📥 Importar CSV
-      <input id="fileImport" type="file" accept=".csv" style="display:none">
-    </label>
+  <!-- Modal de login -->
+  <div id="modal">
+    <div class="box">
+      <h3>Login do Administrador</h3>
+      <input id="user" placeholder="Usuário"><br><br>
+      <input id="pass" type="password" placeholder="Senha"><br><br>
+      <button id="ok">Entrar</button>
+      <button id="cancel" class="danger">Cancelar</button>
+      <p id="msg" style="color:red;"></p>
+    </div>
   </div>
-
-  <div class="footer">⚽ Somente admin pode alterar os dados.</div>
-</div>
-
-<!-- Modal de Login -->
-<div id="modal">
-  <div class="box">
-    <h3>Login de Administrador</h3>
-    <input id="user" type="text" placeholder="Usuário" style="width:100%;margin-bottom:5px;">
-    <input id="pass" type="password" placeholder="Senha" style="width:100%;margin-bottom:8px;">
-    <button id="ok" style="width:100%;margin-bottom:5px;">Entrar</button>
-    <button id="cancel" class="ghost" style="width:100%;">Cancelar</button>
-    <p id="msg" style="color:red;text-align:center;"></p>
-  </div>
-</div>
 
 <script>
 let jogadores = JSON.parse(localStorage.getItem("jogadores")||"[]");
@@ -183,38 +180,41 @@ let admin = localStorage.getItem("isAdmin")==="true";
 let temaAtual = 0;
 let somLigado = false;
 
-// 🎵 som ambiente (torcida)
-const som = new Audio("https://cdn.pixabay.com/download/audio/2022/02/14/audio_5ff23a429f.mp3?filename=soccer-crowd-small-111382.mp3");
+// 🎵 Música da Champions League (livre de direitos)
+const som = new Audio("https://cdn.pixabay.com/download/audio/2022/10/12/audio_9f3f6e7a63.mp3?filename=epic-champions-league-style-123372.mp3");
 som.loop = true;
-som.volume = 0.3;
+som.volume = 0.5;
 
 function alternarSom(){
   if(somLigado){
     som.pause();
-    somLigado=false;
-    btnSom.textContent="🔇 Torcida";
+    somLigado = false;
+    btnSom.textContent = "🔇 Champions";
   }else{
     som.play();
-    somLigado=true;
-    btnSom.textContent="🔊 Torcida";
+    somLigado = true;
+    btnSom.textContent = "🎵 Champions";
   }
 }
 btnSom.onclick = alternarSom;
 
+// 🏟️ Fundos
 const fundos = [
-  "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1920&q=80",
-  "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1920&q=80",
-  "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80"
+  "https://wallpapers.com/images/high/uefa-champions-league-star-bowl-rlsrfh81jsb88ed1.webp",
+  "https://miro.medium.com/1*Hl5ZDBVbcxlUdc2CP7BWCw.png",
+  "https://t3.ftcdn.net/jpg/05/28/82/70/360_F_528827065_2s2V1vqdPtPpYjaOdGn1xyTeRsBP6xAU.jpg"
 ];
+
 function mudarTema(){
   temaAtual = (temaAtual + 1) % fundos.length;
   document.body.style.backgroundImage = 
     `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('${fundos[temaAtual]}')`;
 }
-document.getElementById("btnTema").onclick = mudarTema;
+btnTema.onclick = mudarTema;
 
-function salvar(){localStorage.setItem("jogadores",JSON.stringify(jogadores));}
-function pontos(j){return j.gols*2+j.assist;}
+function salvar(){ localStorage.setItem("jogadores", JSON.stringify(jogadores)); }
+function pontos(j){ return j.gols*2 + j.assist; }
+
 function atualizar(){
   jogadores.sort((a,b)=>pontos(b)-pontos(a));
   const tb=document.querySelector("#tabela tbody");
