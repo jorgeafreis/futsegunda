@@ -38,7 +38,6 @@
     text-shadow: 1px 1px 2px #ccc;
   }
 
-  /* === Responsividade === */
   .controls, .export-import {
     display: flex;
     flex-wrap: wrap;
@@ -70,7 +69,6 @@
     color: var(--azul);
     border: 1px solid var(--azul);
   }
-  .disabled{opacity:0.5;pointer-events:none}
 
   table {
     width: 100%;
@@ -97,6 +95,7 @@
     background: linear-gradient(90deg, #e5e5e5, #f5f5f5);
     box-shadow: 0 0 8px rgba(150,150,150,0.3);
   }
+
   .footer {
     text-align: center;
     font-size: 13px;
@@ -122,7 +121,6 @@
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
 
-  /* === Ajustes mobile === */
   @media (max-width: 600px) {
     body { padding: 10px; }
     h1 { font-size: 20px; }
@@ -144,6 +142,7 @@
     <button id="btnLogin" class="ghost">🔐 Login</button>
     <button id="btnLogout" class="ghost" style="display:none">Sair</button>
     <button id="btnTema" class="ghost">🌆 Mudar tema</button>
+    <button id="btnSom" class="ghost">🔊 Torcida</button>
   </div>
 
   <table id="tabela">
@@ -182,13 +181,31 @@
 let jogadores = JSON.parse(localStorage.getItem("jogadores")||"[]");
 let admin = localStorage.getItem("isAdmin")==="true";
 let temaAtual = 0;
+let somLigado = false;
+
+// 🎵 som ambiente (torcida)
+const som = new Audio("https://cdn.pixabay.com/download/audio/2022/02/14/audio_5ff23a429f.mp3?filename=soccer-crowd-small-111382.mp3");
+som.loop = true;
+som.volume = 0.3;
+
+function alternarSom(){
+  if(somLigado){
+    som.pause();
+    somLigado=false;
+    btnSom.textContent="🔇 Torcida";
+  }else{
+    som.play();
+    somLigado=true;
+    btnSom.textContent="🔊 Torcida";
+  }
+}
+btnSom.onclick = alternarSom;
 
 const fundos = [
   "https://images.unsplash.com/photo-1508609349937-5ec4ae374ebf?auto=format&fit=crop&w=1920&q=80",
   "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=1920&q=80",
   "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1920&q=80"
 ];
-
 function mudarTema(){
   temaAtual = (temaAtual + 1) % fundos.length;
   document.body.style.backgroundImage = 
@@ -198,7 +215,6 @@ document.getElementById("btnTema").onclick = mudarTema;
 
 function salvar(){localStorage.setItem("jogadores",JSON.stringify(jogadores));}
 function pontos(j){return j.gols*2+j.assist;}
-
 function atualizar(){
   jogadores.sort((a,b)=>pontos(b)-pontos(a));
   const tb=document.querySelector("#tabela tbody");
@@ -249,7 +265,6 @@ btnExport.onclick=()=>{
   a.download="ranking.csv";a.click();URL.revokeObjectURL(a.href);
 };
 
-// Importação apenas para admin
 fileImport.onchange=(e)=>{
   if(!admin){alert("Somente admin pode importar!");e.target.value="";return;}
   const f=e.target.files[0];if(!f)return;
